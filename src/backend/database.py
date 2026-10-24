@@ -18,12 +18,15 @@ def hash_password(password):
     return ph.hash(password)
 
 def init_database():
-    """Initialize database if empty"""
+    """Initialize database with default data"""
 
-    # Initialize activities if empty
-    if activities_collection.count_documents({}) == 0:
-        for name, details in initial_activities.items():
-            activities_collection.insert_one({"_id": name, **details})
+    # Add activities that are not already in the database
+    for name, details in initial_activities.items():
+        activities_collection.update_one(
+            {"_id": name},
+            {"$setOnInsert": {"_id": name, **details}},
+            upsert=True
+        )
             
     # Initialize teacher accounts if empty
     if teachers_collection.count_documents({}) == 0:
@@ -119,6 +122,16 @@ initial_activities = {
         },
         "max_participants": 10,
         "participants": ["james@mergington.edu", "benjamin@mergington.edu"]
+    },
+    "Manga Maniacs": {
+        "description": "Step into worlds of epic quests, unforgettable heroes, and dramatic plot twists as we explore Japanese manga together.",
+        "schedule": "Tuesdays at 7:00 PM",
+        "schedule_details": {
+            "days": ["Tuesday"],
+            "start_time": "19:00"
+        },
+        "max_participants": 15,
+        "participants": []
     },
     "Debate Team": {
         "description": "Develop public speaking and argumentation skills",
